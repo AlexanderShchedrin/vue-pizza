@@ -7,11 +7,11 @@
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите тесто</h2>
             <div class="sheet__content dough">
-              <label class="dough__input dough__input--light"
-                     v-for="dough in doughTypes"
+              <label class="dough__input"
+                     v-for="(dough, idx) in doughItems"
                      :key="dough.id"
               >
-                <input class="visually-hidden" type="radio" :name="dough.name" :value="dough.value" checked>
+                <input class="visually-hidden" type="radio" name="dough" :value="dough.value" :checked="!idx">
                 <b>{{ dough.name }}</b>
                 <span>{{ dough.description }}</span>
               </label>
@@ -23,10 +23,11 @@
             <h2 class="title title--small sheet__title">Выберите размер</h2>
             <div class="sheet__content diameter">
               <label class="diameter__input"
-                     v-for="sizeData in sizes"
+                     v-for="sizeData in sizeItems"
                      :key="sizeData.id"
+                     :class="`diameter__input--${sizeData.value}`"
               >
-                <input type="radio" name="diameter" :value="sizeData.multiplier" class="visually-hidden">
+                <input class="visually-hidden" type="radio" name="diameter" :value="sizeData.value">
                 <span>{{ sizeData.name }}</span>
               </label>
             </div>
@@ -39,10 +40,10 @@
               <div class="ingredients__sauce">
                 <p>Основной соус:</p>
                 <label class="radio ingredients__input"
-                       v-for="(saucesData, idx) in sauces"
+                       v-for="(saucesData, idx) in sauceItems"
                        :key="saucesData.id"
                 >
-                  <input type="radio" name="sauce" :value="saucesData.id" :checked="!idx">
+                  <input type="radio" name="sauce" :value="saucesData.value" :checked="!idx">
                   <span>{{ saucesData.name }}</span>
                 </label>
               </div>
@@ -50,10 +51,14 @@
                 <p>Начинка:</p>
                 <ul class="ingredients__list">
                   <li class="ingredients__item"
-                      v-for="ingredientsData in ingredients"
+                      v-for="ingredientsData in ingredientItems"
                       :key="ingredientsData.id"
                   >
-                    <span class="filling filling--mushrooms">{{ ingredientsData.name }}</span>
+                    <span class="filling"
+                          :class="`filling--${ingredientsData.value}`"
+                    >
+                      {{ ingredientsData.name }}
+                    </span>
                     <div class="counter counter--orange ingredients__counter">
                       <button type="button" class="counter__button counter__button--minus" disabled>
                         <span class="visually-hidden">Меньше</span>
@@ -97,10 +102,19 @@
   </main>
 </template>
 <script setup>
-import doughTypes from '@/mocks/dough.json';
-import sauces from '@/mocks/sauces.json';
-import ingredients from '@/mocks/ingredients.json';
-import sizes from '@/mocks/sizes.json';
+import doughJSON from '@/mocks/dough.json';
+import saucesJSON  from '@/mocks/sauces.json';
+import ingredientsJSON  from '@/mocks/ingredients.json';
+import sizesJSON  from '@/mocks/sizes.json';
+
+import {normalizeDough, normalizeSauces, normalizeIngredients, normalizeSize} from "@/common/helpers/normalize";
+
+const doughItems = doughJSON.map(normalizeDough);
+const ingredientItems = ingredientsJSON.map(normalizeIngredients);
+const sauceItems = saucesJSON.map(normalizeSauces);
+const sizeItems = sizesJSON.map(normalizeSize);
+
+const getImage = (image) => new URL(`@/assets/img/${image}`, import.meta.url).href;
 
 </script>
 <style lang="scss">
