@@ -6,71 +6,34 @@
         <div class="content__dough">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите тесто</h2>
-            <div class="sheet__content dough">
-              <label class="dough__input"
-                     v-for="(dough, idx) in doughItems"
-                     :key="dough.id"
-              >
-                <input class="visually-hidden" type="radio" name="dough" :value="dough.value" :checked="!idx">
-                <b>{{ dough.name }}</b>
-                <span>{{ dough.description }}</span>
-              </label>
-            </div>
+            <DoughSelector
+              :items="doughItems"
+              v-model="pizza.dough"
+            />
           </div>
         </div>
         <div class="content__diameter">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите размер</h2>
-            <div class="sheet__content diameter">
-              <label class="diameter__input"
-                     v-for="sizeData in sizeItems"
-                     :key="sizeData.id"
-                     :class="`diameter__input--${sizeData.value}`"
-              >
-                <input class="visually-hidden" type="radio" name="diameter" :value="sizeData.value">
-                <span>{{ sizeData.name }}</span>
-              </label>
-            </div>
+            <DiameterSelector
+              :items="sizeItems"
+              v-model="pizza.size"
+            />
           </div>
         </div>
         <div class="content__ingredients">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите ингредиенты</h2>
             <div class="sheet__content ingredients">
-              <div class="ingredients__sauce">
-                <p>Основной соус:</p>
-                <label class="radio ingredients__input"
-                       v-for="(saucesData, idx) in sauceItems"
-                       :key="saucesData.id"
-                >
-                  <input type="radio" name="sauce" :value="saucesData.value" :checked="!idx">
-                  <span>{{ saucesData.name }}</span>
-                </label>
-              </div>
-              <div class="ingredients__filling">
-                <p>Начинка:</p>
-                <ul class="ingredients__list">
-                  <li class="ingredients__item"
-                      v-for="ingredientsData in ingredientItems"
-                      :key="ingredientsData.id"
-                  >
-                    <span class="filling"
-                          :class="`filling--${ingredientsData.value}`"
-                    >
-                      {{ ingredientsData.name }}
-                    </span>
-                    <div class="counter counter--orange ingredients__counter">
-                      <button type="button" class="counter__button counter__button--minus" disabled>
-                        <span class="visually-hidden">Меньше</span>
-                      </button>
-                      <input type="text" name="counter" class="counter__input" value="0">
-                      <button type="button" class="counter__button counter__button--plus">
-                        <span class="visually-hidden">Больше</span>
-                      </button>
-                    </div>
-                  </li>
-                </ul>
-              </div>
+              <SauceSelector
+                :items="sauceItems"
+                v-model="pizza.sauce"
+              />
+             <IngredientsSelector
+                :items="ingredientItems"
+                :values="pizza.ingredients"
+                @update="updateIngredientAmount"
+             />
             </div>
           </div>
         </div>
@@ -79,17 +42,12 @@
             <span class="visually-hidden">Название пиццы</span>
             <input type="text" name="pizza_name" placeholder="Введите название пиццы">
           </label>
-
-          <div class="content__constructor">
-            <div class="pizza pizza--foundation--big-tomato">
-              <div class="pizza__wrapper">
-                <div class="pizza__filling pizza__filling--ananas"></div>
-                <div class="pizza__filling pizza__filling--bacon"></div>
-                <div class="pizza__filling pizza__filling--cheddar"></div>
-              </div>
-            </div>
-          </div>
-
+          <PizzaConstructor
+            :dough="pizza.dough"
+            :sauce="pizza.sauce"
+            :ingredients="pizza.ingredients"
+            @drop="addIngredient"
+          />
           <div class="content__result">
             <p>Итого: 0 ₽</p>
             <button type="button" class="button" disabled>Готовьте!</button>
@@ -102,17 +60,66 @@
   </main>
 </template>
 <script setup>
+import DoughSelector from '@/modules/constructor/DoughSelector.vue';
+
 import doughJSON from '@/mocks/dough.json';
 import saucesJSON  from '@/mocks/sauces.json';
 import ingredientsJSON  from '@/mocks/ingredients.json';
 import sizesJSON  from '@/mocks/sizes.json';
 
 import {normalizeDough, normalizeSauces, normalizeIngredients, normalizeSize} from "@/common/helpers/normalize";
+import DiameterSelector from '@/modules/constructor/DiameterSelector.vue';
+import SauceSelector from '@/modules/constructor/SauceSelector.vue';
+import IngredientsSelector from '@/modules/constructor/IngredientsSelector.vue';
+import PizzaConstructor from '@/modules/constructor/PizzaConstructor.vue';
+import { computed, reactive } from 'vue';
 
 const doughItems = doughJSON.map(normalizeDough);
 const ingredientItems = ingredientsJSON.map(normalizeIngredients);
 const sauceItems = saucesJSON.map(normalizeSauces);
 const sizeItems = sizesJSON.map(normalizeSize);
+
+const pizza = reactive({
+  name: "",
+  dough: doughItems[0].value,
+  size: sizeItems[0].value,
+  sauce: sauceItems[0].value,
+  ingredients: ingredientItems.reduce((acc, item) => {
+    acc[item.value] = 0;
+    return acc;
+  }, {}),
+});
+
+const price = computed(() => {
+  const { dough, size, sauce, ingredients } = pizza;
+
+  const sizeMultiplier =
+    sizeItems.find((item) => item.value === size)?.multiplier ?? 1;
+
+  const doughPrice =
+    doughItems.find((item) => item.value === dough)?.price ?? 0;
+
+  const saucePrice =
+    sauceItems.find((item) => item.value === sauce)?.price ?? 0;
+
+  const ingredientsPrice = ingredientItems
+    .map((item) => ingredients[item.value] * item.price)
+    .reduce((acc, item) => acc + item, 0);
+
+  return (doughPrice + saucePrice + ingredientsPrice) * sizeMultiplier;
+});
+
+const disableSubmit = computed(() => {
+  return pizza.name.length === 0 || price.value === 0;
+});
+
+const addIngredient = (ingredient) => {
+  pizza.ingredients[ingredient]++;
+};
+
+const updateIngredientAmount = (ingredient, count) => {
+  pizza.ingredients[ingredient] = count;
+};
 
 const getImage = (image) => new URL(`@/assets/img/${image}`, import.meta.url).href;
 
