@@ -10,13 +10,19 @@
         <AppDrag
           :transfer-data="ingredientsData"
           :draggable="getValue(ingredientsData.value) < MAX_INGREDIENT_COUNT"
-        />
-        <span
-          class="filling"
-          :class="`filling--${ingredientsData.value}`"
         >
-          {{ ingredientsData.name }}
-        </span>
+          <div
+            class="filling"
+            :class="`filling--${ingredientsData.value}`"
+          >
+            <img
+              :src="getImage(ingredientsData.image)"
+              :alt="ingredientsData.name"
+            />
+            {{ ingredientsData.name }}
+          </div>
+        </AppDrag>
+
         <div class="counter counter--orange ingredients__counter">
           <button
             type="button"
@@ -91,11 +97,12 @@ const getImage = (image) => {
 
 </script>
 <style lang="scss" scoped>
-@import "@/assets/scss/ds-system/ds.scss";
-@import "@/assets/scss/mixins/mixins.scss";
+@import '@/assets/scss/ds-system/ds.scss';
+@import '@/assets/scss/mixins/mixins.scss';
 
 .ingredients__filling {
   width: 100%;
+
   p {
     @include r-s16-h19;
     margin-top: 0;
@@ -151,7 +158,7 @@ const getImage = (image) => {
       @include p_center-all;
       width: $size_icon;
       height: 2px;
-      content: "";
+      content: '';
       border-radius: 2px;
       background-color: $black;
     }
@@ -170,6 +177,7 @@ const getImage = (image) => {
 
     &:disabled {
       cursor: default;
+
       &::before {
         opacity: 0.1;
       }
@@ -183,7 +191,7 @@ const getImage = (image) => {
       @include p_center-all;
       width: $size_icon;
       height: 2px;
-      content: "";
+      content: '';
       border-radius: 2px;
       background-color: $white;
     }
@@ -192,7 +200,7 @@ const getImage = (image) => {
       @include p_center-all;
       width: $size_icon;
       height: 2px;
-      content: "";
+      content: '';
       transform: translate(-50%, -50%) rotate(90deg);
       border-radius: 2px;
       background-color: $white;

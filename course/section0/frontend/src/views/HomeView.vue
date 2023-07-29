@@ -3,24 +3,14 @@
     <form action="#" method="post">
       <div class="content__wrapper">
         <h1 class="title title--big">Конструктор пиццы</h1>
-        <div class="content__dough">
-          <div class="sheet">
-            <h2 class="title title--small sheet__title">Выберите тесто</h2>
-            <DoughSelector
-              :items="doughItems"
-              v-model="pizza.dough"
-            />
-          </div>
-        </div>
-        <div class="content__diameter">
-          <div class="sheet">
-            <h2 class="title title--small sheet__title">Выберите размер</h2>
-            <DiameterSelector
-              :items="sizeItems"
-              v-model="pizza.size"
-            />
-          </div>
-        </div>
+        <DoughSelector
+          :items="doughItems"
+          v-model="pizza.dough"
+        />
+        <DiameterSelector
+          :items="sizeItems"
+          v-model="pizza.size"
+        />
         <div class="content__ingredients">
           <div class="sheet">
             <h2 class="title title--small sheet__title">Выберите ингредиенты</h2>
@@ -80,7 +70,7 @@ const sauceItems = saucesJSON.map(normalizeSauces);
 const sizeItems = sizesJSON.map(normalizeSize);
 
 const pizza = reactive({
-  name: "",
+  name: '',
   dough: doughItems[0].value,
   size: sizeItems[0].value,
   sauce: sauceItems[0].value,

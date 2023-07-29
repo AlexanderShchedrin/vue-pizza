@@ -1,19 +1,24 @@
 <template>
-  <div class="sheet__content dough">
-    <label class="dough__input"
-           v-for="(dough, idx) in items"
-           :key="dough.id"
-    >
-      <input
-        class="visually-hidden"
-        type="radio"
-        name="dough"
-        :value="dough.value"
-        :checked="dough.value === modelValue">
-      <img :src="getImage(dough.image)" :alt="dough.name" />
-      <b>{{ dough.name }}</b>
-      <span>{{ dough.description }}</span>
-    </label>
+  <div class="content__dough">
+    <div class="sheet">
+      <h2 class="title title--small sheet__title">Выберите тесто</h2>
+      <div class="sheet__content dough">
+        <label class="dough__input"
+               v-for="(dough, idx) in items"
+               :key="dough.id"
+        >
+          <input
+            class="visually-hidden"
+            type="radio"
+            name="dough"
+            :value="dough.value"
+            :checked="dough.value === modelValue">
+          <img :src="getImage(dough.image)" :alt="dough.name" />
+          <b>{{ dough.name }}</b>
+          <span>{{ dough.description }}</span>
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 <script setup>

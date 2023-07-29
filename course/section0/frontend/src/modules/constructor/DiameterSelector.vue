@@ -1,19 +1,24 @@
 <template>
-  <div class="sheet__content diameter">
-    <label class="diameter__input"
-           v-for="sizeData in items"
-           :key="sizeData.id"
-           :class="`diameter__input--${sizeData.value}`"
-    >
-      <input
-        class="visually-hidden"
-        type="radio" name="diameter"
-        :value="sizeData.value"
-        :checked="sizeData.value === modelValue"
-        @input="emit('update:modelValue', sizeData.value)"
-      >
-      <span>{{ sizeData.name }}</span>
-    </label>
+  <div class="content__diameter">
+    <div class="sheet">
+      <h2 class="title title--small sheet__title">Выберите размер</h2>
+      <div class="sheet__content diameter">
+        <label class="diameter__input"
+               v-for="sizeData in items"
+               :key="sizeData.id"
+               :class="`diameter__input--${sizeData.value}`"
+        >
+          <input
+            class="visually-hidden"
+            type="radio" name="diameter"
+            :value="sizeData.value"
+            :checked="sizeData.value === modelValue"
+            @input="emit('update:modelValue', sizeData.value)"
+          >
+          <span>{{ sizeData.name }}</span>
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 <script setup>
