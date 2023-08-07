@@ -1,10 +1,9 @@
 <template>
   <app-layout>
-    <home-view />
+    <router-view/>
   </app-layout>
 </template>
 <script setup>
-import HomeView from "@/views/HomeView.vue";
 import AppLayout from "@/layouts/AppLayout.vue";
 </script>
 <style lang="scss">

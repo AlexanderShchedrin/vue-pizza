@@ -1,10 +1,30 @@
 <template>
-  <div>
-    <app-header />
-    <slot />
-  </div>
+  <component :is="layout">
+    <slot/>
+  </component>
 </template>
 
 <script setup>
-import AppHeader from "./AppHeader.vue";
+import {useRoute} from 'vue-router';
+import {shallowRef, watch} from 'vue';
+import AppLayoutDefault from '@/layouts/AppLayoutDefault.vue';
+
+const route = useRoute();
+const layout = shallowRef();
+
+// Наблюдаем за изменением маршрута
+watch(() => route.meta, async meta => {
+  try {
+    // Пробуем найти компонент из свойства meta и динамически импортировать его
+    if (meta.layout) {
+      const component = await import(`./${meta.layout}.vue`);
+      layout.value = component?.default || AppLayoutDefault;
+    } else {
+      layout.value = AppLayoutDefault;
+    }
+  } catch (e) {
+    console.error('Динамический шаблон не найден. Установлен шаблон по-умолчанию.', e)
+    layout.value = AppLayoutDefault
+  }
+})
 </script>
