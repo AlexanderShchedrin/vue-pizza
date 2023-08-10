@@ -3,117 +3,133 @@
     <form action="#" method="post">
       <div class="content__wrapper">
         <h1 class="title title--big">Конструктор пиццы</h1>
-        <DoughSelector
-          :items="doughItems"
-          v-model="pizza.dough"
-        />
-        <DiameterSelector
-          :items="sizeItems"
-          v-model="pizza.size"
-        />
+        <dough-selector v-model="doughId" :items="dataStore.doughs" />
+        <diameter-selector v-model="sizeId" :items="dataStore.sizes" />
         <div class="content__ingredients">
           <div class="sheet">
-            <h2 class="title title--small sheet__title">Выберите ингредиенты</h2>
+            <h2 class="title title--small sheet__title">
+              Выберите ингредиенты
+            </h2>
             <div class="sheet__content ingredients">
-              <SauceSelector
-                :items="sauceItems"
-                v-model="pizza.sauce"
+              <sauce-selector v-model="sauceId" :items="dataStore.sauces" />
+              <ingredients-selector
+                :values="pizzaStore.ingredientQuantities"
+                :items="dataStore.ingredients"
+                @update="pizzaStore.setIngredientQuantity"
               />
-             <IngredientsSelector
-                :items="ingredientItems"
-                :values="pizza.ingredients"
-                @update="updateIngredientAmount"
-             />
             </div>
           </div>
         </div>
         <div class="content__pizza">
           <label class="input">
             <span class="visually-hidden">Название пиццы</span>
-            <input type="text" name="pizza_name" placeholder="Введите название пиццы">
+            <input
+              v-model="name"
+              type="text"
+              name="pizza_name"
+              placeholder="Введите название пиццы"
+            />
           </label>
-          <PizzaConstructor
-            :dough="pizza.dough"
-            :sauce="pizza.sauce"
-            :ingredients="pizza.ingredients"
-            @drop="addIngredient"
+          <pizza-constructor
+            :dough="pizzaStore.dough.value"
+            :sauce="pizzaStore.sauce.value"
+            :ingredients="pizzaStore.ingredientsExtended"
+            @drop="pizzaStore.incrementIngredientQuantity"
           />
           <div class="content__result">
-            <p>Итого: 0 ₽</p>
-            <button type="button" class="button" disabled>Готовьте!</button>
+            <p>Итого: {{ pizzaStore.price }} ₽</p>
+            <button
+              type="button"
+              class="button"
+              :disabled="disableSubmit"
+              @click="addToCart"
+            >Готовьте!</button>
           </div>
         </div>
-
       </div>
-
     </form>
   </main>
 </template>
+
 <script setup>
-import DoughSelector from '@/modules/constructor/DoughSelector.vue';
+import { computed, onMounted } from "vue";
+import DoughSelector from "@/modules/constructor/DoughSelector.vue";
+import DiameterSelector from "@/modules/constructor/DiameterSelector.vue";
+import SauceSelector from "@/modules/constructor/SauceSelector.vue";
+import IngredientsSelector from "@/modules/constructor/IngredientsSelector.vue";
+import PizzaConstructor from "@/modules/constructor/PizzaConstructor.vue";
+import { usePizzaStore } from "@/stores/pizza";
+import { useDataStore } from "@/stores/data";
+import { useCartStore } from "@/stores/cart";
+import { useRouter } from "vue-router";
 
-import doughJSON from '@/mocks/dough.json';
-import saucesJSON  from '@/mocks/sauces.json';
-import ingredientsJSON  from '@/mocks/ingredients.json';
-import sizesJSON  from '@/mocks/sizes.json';
+const dataStore = useDataStore();
+const pizzaStore = usePizzaStore();
+const cartStore = useCartStore();
 
-import {normalizeDough, normalizeSauces, normalizeIngredients, normalizeSize} from "@/common/helpers/normalize";
-import DiameterSelector from '@/modules/constructor/DiameterSelector.vue';
-import SauceSelector from '@/modules/constructor/SauceSelector.vue';
-import IngredientsSelector from '@/modules/constructor/IngredientsSelector.vue';
-import PizzaConstructor from '@/modules/constructor/PizzaConstructor.vue';
-import { computed, reactive } from 'vue';
+const router = useRouter();
 
-const doughItems = doughJSON.map(normalizeDough);
-const ingredientItems = ingredientsJSON.map(normalizeIngredients);
-const sauceItems = saucesJSON.map(normalizeSauces);
-const sizeItems = sizesJSON.map(normalizeSize);
-
-const pizza = reactive({
-  name: '',
-  dough: doughItems[0].value,
-  size: sizeItems[0].value,
-  sauce: sauceItems[0].value,
-  ingredients: ingredientItems.reduce((acc, item) => {
-    acc[item.value] = 0;
-    return acc;
-  }, {}),
+const name = computed({
+  get() {
+    return pizzaStore.name;
+  },
+  set(value) {
+    pizzaStore.setName(value);
+  },
 });
 
-const price = computed(() => {
-  const { dough, size, sauce, ingredients } = pizza;
+const doughId = computed({
+  get() {
+    return pizzaStore.doughId;
+  },
+  set(value) {
+    pizzaStore.setDough(value);
+  },
+});
 
-  const sizeMultiplier =
-    sizeItems.find((item) => item.value === size)?.multiplier ?? 1;
+const sizeId = computed({
+  get() {
+    return pizzaStore.sizeId;
+  },
+  set(value) {
+    pizzaStore.setSize(value);
+  },
+});
 
-  const doughPrice =
-    doughItems.find((item) => item.value === dough)?.price ?? 0;
-
-  const saucePrice =
-    sauceItems.find((item) => item.value === sauce)?.price ?? 0;
-
-  const ingredientsPrice = ingredientItems
-    .map((item) => ingredients[item.value] * item.price)
-    .reduce((acc, item) => acc + item, 0);
-
-  return (doughPrice + saucePrice + ingredientsPrice) * sizeMultiplier;
+const sauceId = computed({
+  get() {
+    return pizzaStore.sauceId;
+  },
+  set(value) {
+    pizzaStore.setSauce(value);
+  },
 });
 
 const disableSubmit = computed(() => {
-  return pizza.name.length === 0 || price.value === 0;
+  return name.value.length === 0 || pizzaStore.price === 0;
 });
 
-const addIngredient = (ingredient) => {
-  pizza.ingredients[ingredient]++;
+const addToCart = async () => {
+  cartStore.savePizza(pizzaStore.$state);
+  await router.push({ name: "cart" });
+  resetPizza();
 };
 
-const updateIngredientAmount = (ingredient, count) => {
-  pizza.ingredients[ingredient] = count;
+const resetPizza = () => {
+  pizzaStore.setName("");
+  pizzaStore.setDough(dataStore.doughs[0].id);
+  pizzaStore.setSize(dataStore.sizes[0].id);
+  pizzaStore.setSauce(dataStore.sauces[0].id);
+  pizzaStore.setIngredients([]);
 };
 
-const getImage = (image) => new URL(`@/assets/img/${image}`, import.meta.url).href;
-
+onMounted(() => {
+  if (pizzaStore.index === null) {
+    resetPizza();
+  }
+});
 </script>
+
 <style lang="scss">
 @import "@/assets/scss/ds-system/ds.scss";
 @import "@/assets/scss/mixins/mixins.scss";

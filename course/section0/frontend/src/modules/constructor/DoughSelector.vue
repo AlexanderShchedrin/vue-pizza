@@ -3,20 +3,25 @@
     <div class="sheet">
       <h2 class="title title--small sheet__title">Выберите тесто</h2>
       <div class="sheet__content dough">
-        <label class="dough__input"
-               v-for="(dough, idx) in items"
-               :key="dough.id"
+        <label
+          v-for="doughType in items"
+          :key="doughType.id"
+          class="dough__input"
         >
           <input
-            class="visually-hidden"
             type="radio"
             name="dough"
-            :value="dough.value"
-            :checked="dough.value === modelValue">
-          <img :src="getImage(dough.image)" :alt="dough.name" />
-          <b>{{ dough.name }}</b>
-          <span>{{ dough.description }}</span>
+            :value="doughType.id"
+            :checked="doughType.id === modelValue"
+            class="visually-hidden"
+            @input="emit('update:modelValue', doughType.id)"
+          />
+          <img :src="getImage(doughType.image)" :alt="doughType.name" />
+
+          <b>{{ doughType.name }}</b>
+          <span>{{ doughType.description }}</span>
         </label>
+
       </div>
     </div>
   </div>
@@ -24,8 +29,8 @@
 <script setup>
 defineProps({
   modelValue: {
-    type: String,
-    default: '',
+    type: Number,
+    required: true,
   },
   items: {
     type: Array,

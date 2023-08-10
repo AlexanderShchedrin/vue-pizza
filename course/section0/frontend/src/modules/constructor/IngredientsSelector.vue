@@ -1,45 +1,41 @@
 <template>
   <div class="ingredients__filling">
     <p>Начинка:</p>
+
     <ul class="ingredients__list">
       <li
+        v-for="ingredient in items"
+        :key="ingredient.id"
         class="ingredients__item"
-        v-for="ingredientsData in items"
-        :key="ingredientsData.id"
       >
-        <AppDrag
-          :transfer-data="ingredientsData"
-          :draggable="getValue(ingredientsData.value) < MAX_INGREDIENT_COUNT"
+        <app-drag
+          :data-transfer="ingredient"
+          :draggable="values[ingredient.id] < MAX_INGREDIENT_COUNT"
         >
-          <div
-            class="filling"
-            :class="`filling--${ingredientsData.value}`"
-          >
-            <img
-              :src="getImage(ingredientsData.image)"
-              :alt="ingredientsData.name"
-            />
-            {{ ingredientsData.name }}
+          <div class="filling">
+            <img :src="getImage(ingredient.image)" :alt="ingredient.name" />
+            {{ ingredient.name }}
           </div>
-        </AppDrag>
-        <AppCounter
-            class="ingredients__counter"
-            :value="getValue(ingredientsData.value)"
-            :min="0"
-            :max="MAX_INGREDIENT_COUNT"
-            @input="inputValue(ingredientsData.value, $event)"
+        </app-drag>
+        <app-counter
+          class="ingredients__counter"
+          :value="values[ingredient.id]"
+          :min="0"
+          :max="MAX_INGREDIENT_COUNT"
+          @input="inputValue(ingredient.id, $event)"
         />
       </li>
     </ul>
   </div>
 </template>
+
 <script setup>
 import { toRef } from 'vue';
 import AppDrag from '@/common/components/AppDrag.vue';
 import { MAX_INGREDIENT_COUNT } from '@/common/constants';
 import AppCounter from '@/common/components/AppCounter.vue';
 
-const props = defineProps({
+defineProps({
   values: {
     type: Object,
     default: () => ({}),
@@ -47,23 +43,18 @@ const props = defineProps({
   items: {
     type: Array,
     default: () => [],
-  }
+  },
 });
 
 const emit = defineEmits(['update']);
-const values = toRef(props, 'values');
-
-const getValue = (ingredient) => {
-  return values.value[ingredient] ?? 0;
-}
 
 const setValue = (ingredient, count) => {
   emit('update', ingredient, Number(count));
 }
 
 const inputValue = (ingredient, count) => {
-  return setValue(ingredient, Math.min(MAX_INGREDIENT_COUNT, Number(count)));
-}
+  setValue(ingredient, Math.min(MAX_INGREDIENT_COUNT, Number(count)));
+};
 
 const getImage = (image) => {
   return new URL(`../../assets/img/${ image }`, import.meta.url).href;
