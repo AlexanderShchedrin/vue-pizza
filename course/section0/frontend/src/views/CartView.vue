@@ -19,7 +19,7 @@
           >
             <div class="product cart-list__product">
               <img
-                :src="getImage('product.svg')"
+                :src="getPublicImage('product.svg')"
                 class="product__img"
                 width="56"
                 height="56"
@@ -66,7 +66,7 @@
             >
               <p class="additional-list__description">
                 <img
-                  :src="getImage(`${misc.image}.svg`)"
+                  :src="getPublicImage(`${misc.image}.svg`)"
                   width="39"
                   height="60"
                   alt="Coca-Cola 0,5 литра"
@@ -166,6 +166,7 @@ import { usePizzaStore } from "@/stores/pizza";
 import { useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import { useProfileStore } from "@/stores/profile";
+import { getPublicImage } from '@/common/helpers/public-image';
 
 const cartStore = useCartStore();
 const pizzaStore = usePizzaStore();
@@ -227,9 +228,6 @@ const submit = async () => {
   await router.push({ name: "success" });
 };
 
-const getImage = (image) => {
-  return new URL(`../assets/img/${image}`, import.meta.url).href;
-};
 </script>
 
 <style lang="scss">
@@ -510,7 +508,7 @@ const getImage = (image) => {
   border-radius: 8px;
   outline: none;
   background-color: $silver-100;
-  background-image: url("@/assets/img/select.svg");
+  background-image: url("/api/public/img/select.svg");
   background-repeat: no-repeat;
   background-position: right 8px center;
 
